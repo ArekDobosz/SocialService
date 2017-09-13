@@ -4,10 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 use App\User;
+use App\Post;
 
 class UsersController extends Controller
 {
+
+public function __construct() {
+    $this->middleware('user_permission', ['only' => ['edit', 'update'] ]);
+}
+
     /**
      * Display the specified resource.
      *
@@ -17,8 +25,12 @@ class UsersController extends Controller
     public function show($id)
     {
         $user =  User::findOrFail($id);
+        // $posts = Post::where(['user_id' => $id]);
+        $posts = $user->posts()->paginate(6);
+
         return view('users.show', array(
-            'user' => $user
+            'user' => $user,
+            'posts' => $posts
         ));
     }
 
@@ -30,9 +42,6 @@ class UsersController extends Controller
      */
     public function edit($id)
     {
-        if(Auth::id() != $id) {
-            abort(403, "Brak dostępu");
-        }
         $user = Auth::user();
         return view('users.edit', compact('id', 'user'));
     }
@@ -46,14 +55,39 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if(Auth::id() != $id) {
-            abort(403, "Brak dostępu");
-        }
+        $this->validate($request, [
+            'name' => 'required|min:3|max:50',
+            'email'=> [
+                'required',
+                'email',
+                Rule::unique('users')->ignore($id)
+            ]
+        ],[
+            'required' => 'To pole jest wymagane',
+            'unique' => 'Podany adres email istnieje już w bazie danych',
+            'email' => 'Wprowadź poprawny adres email',
+            'min' => 'Pole musi mieć podane minimum :min znaków'
+        ]);
 
+        
+        
         $user = User::findOrFail($id);
         $user->name = $request->name;
         $user->email = $request->email;
         $user->sex = $request->sex;
+
+        if($request->file('avatar')) {
+            $userAvatarPath = 'public/users/'.$id.'/avatars';
+
+            if($user->avatar) {
+                Storage::delete($userAvatarPath.'/'.$user->avatar);
+            } 
+                      
+            $uploadPath = $request->file('avatar')->store($userAvatarPath);
+            $avatarFile = str_replace($userAvatarPath.'/', '', $uploadPath);
+            $user->avatar = $avatarFile;
+        }
+
         $user->save();
 
         return back();

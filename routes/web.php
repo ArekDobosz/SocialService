@@ -11,12 +11,23 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'WallsController@index');
 
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::resource('/users', 'UsersController', array('except' => ['store', 'index', 'create']));
+
+Route::get('/avatars/{id}/{size}', 'ImageController@createAvatar');
+
+Route::get('/search', 'SearchController@searchUsers');
+
+Route::get('/users/{user}/friends', 'FriendsController@index');
+Route::post('/friends/{id}', 'FriendsController@add');
+Route::patch('/friends/{id}', 'FriendsController@accept');
+Route::delete('/friends/{id}', 'FriendsController@delete');
+
+Route::resource('posts', 'PostsController', array('except' => ['index', 'create']));
+
+// Route::get('/wall', 'WallsController@index');

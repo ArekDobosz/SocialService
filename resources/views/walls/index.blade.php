@@ -3,8 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row">
-        @include('layouts.sidebar')
-        <div class="col-md-8">
+        <div class="col-md-6 col-md-offset-3">
             <div class="panel panel-default">
                 <div class="panel-heading text-center">
                     Aktywności
@@ -15,19 +14,13 @@
                 </div>
                 @endif
             </div>
-            @if($posts->count() < 1) 
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        Brak postów do wyświetlenia.
-                    </div>
-                </div>
-            @endif
 
             @foreach($posts as $post)
                 @include('posts.single')
             @endforeach
-
-            {{ $posts->links() }}
+            <div class="col-md-12 text-center">
+                {{ $posts->links() }}
+            </div>
         </div>
     </div>
 </div>

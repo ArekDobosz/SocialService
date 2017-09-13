@@ -26,4 +26,20 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function friendsMine() {
+        return $this->belongsToMany('App\User', 'friends', 'user_id', 'friend_id')->wherePivot('accepted', 1);
+    }
+
+    public function friendsOther() {
+        return $this->belongsToMany('App\User', 'friends', 'friend_id', 'user_id')->wherePivot('accepted', 1);
+    }
+
+    public function friends() {
+        return $this->friendsMine->merge($this->friendsOther);
+    }
+
+    public function posts() {
+        return $this->hasMany('App\Post')->orderBy('created_at', 'desc');
+    }
 }
