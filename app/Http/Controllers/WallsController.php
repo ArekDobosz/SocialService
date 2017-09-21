@@ -24,12 +24,22 @@ class WallsController extends Controller
             $friends_ids_arr[] = $friend->id;
         }
 
-        $posts = Post::whereIn('user_id', $friends_ids_arr)
+        if(is_admin()) {
+            $posts = Post::with('comments.author')
+            ->with('likes')
+            ->with('comments.likes')
+            ->whereIn('user_id', $friends_ids_arr)
             ->orderBy('created_at', 'desc')
-            ->paginate(3);
-
-        // var_dump($posts);
-        // exit;
+            ->withTrashed()
+            ->paginate(6);
+        } else {
+            $posts = Post::with('comments.author')
+            ->with('likes')
+            ->with('comments.likes')
+            ->whereIn('user_id', $friends_ids_arr)
+            ->orderBy('created_at', 'desc')
+            ->paginate(6);
+        }   
 
         return view('walls.index', compact('posts', 'user'));
     }

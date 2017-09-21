@@ -30,4 +30,7 @@ Route::delete('/friends/{id}', 'FriendsController@delete');
 
 Route::resource('posts', 'PostsController', array('except' => ['index', 'create']));
 
-// Route::get('/wall', 'WallsController@index');
+Route::resource('/comments', 'CommentsController', array('except' => ['index', 'show', 'create']));
+
+Route::post('/likes', 'LikesController@add');
+Route::delete('/likes', 'LikesController@destroy');

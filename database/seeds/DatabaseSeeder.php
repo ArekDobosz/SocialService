@@ -3,6 +3,7 @@
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 use App\Friend;
+use App\Comment;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,14 +17,33 @@ class DatabaseSeeder extends Seeder
         $faker = Faker::create('pl_PL');
 
         $usersCount = 20;
+        $max_posts_per_user = 7;
+        $max_comments_per_post = 10;
+        $comments_total = $usersCount * $max_comments_per_post;
 
+        /* ROLES */
+        
+        DB::table('roles')->insert([
+            'type' => 'admin',
+            'id' => 1
+        ]);
+
+        DB::table('roles')->insert([
+            'type' => 'user',
+            'id' => 2
+        ]);
+
+
+        /*USERS*/
         for($i = 1; $i <= $usersCount; $i++){
 
             if($i == 1){
                 $name = 'Arek Dobosz';
                 $sex = 'm';
                 $avatar = null;
+                $role = 1;
             } else {
+                $role = 2;
                 $sex = $faker->randomElement(['m', 'f']);
                 switch($sex){
                     case 'm' :
@@ -43,6 +63,7 @@ class DatabaseSeeder extends Seeder
                 'name' => $name,
                 'email' => str_replace('-', '', str_slug($name)).'@'.$faker->safeEmailDomain,
                 'sex' => $sex,
+                'role' => $role,
                 'avatar' => $avatar,
                 'password' => bcrypt('1234')
             ));
@@ -68,6 +89,25 @@ class DatabaseSeeder extends Seeder
             }
             /* POSTS */
 
+            for($j = 1; $j < $faker->numberBetween($min = 1, $max_posts_per_user); $j++) {
+                $content = $faker->realText($maxNbChars = 200, $indexSize = 2);
+                $post_id = $j;
+                DB::table('posts')->insert(array(
+                    'user_id' => $i,
+                    'content' => $content,
+                    'created_at' => $faker->dateTimeThisYear($max = 'now')
+                ));
+            }
+
+        }
+        /* COMMENTS */
+
+        for($comment_id = 1; $comment_id < $comments_total; $comment_id++) {
+            DB::table('comments')->insert(array(
+                'post_id' =>$faker->numberBetween(1, $max_posts_per_user * $usersCount / 2),
+                'author_id' => $faker->numberBetween(1, $usersCount),
+                'content' => $faker->realText($maxNbChars = 100, $indexSize = 2)
+            ));
         }
         
     }

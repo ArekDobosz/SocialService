@@ -4,8 +4,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
+use App\Comment;
 
-class CheckUserPermission
+class CheckCommentPermission
 {
     /**
      * Handle an incoming request.
@@ -17,10 +18,15 @@ class CheckUserPermission
     public function handle($request, Closure $next)
     {
 
-        if( !Auth::check() || $request->user != Auth::id() && !is_admin()) {
+        $commentExists = Comment::where([
+            'id' => $request->comment,
+            'author_id' => Auth::id()
+        ])->exists();
+
+        if(!Auth::check() ||  !$commentExists && !is_admin()) {
             abort(403, 'Brak dostępu');
         }
 
-        return $next($request);     
+        return $next($request);
     }
 }

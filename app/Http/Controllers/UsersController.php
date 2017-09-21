@@ -25,8 +25,21 @@ public function __construct() {
     public function show($id)
     {
         $user =  User::findOrFail($id);
-        // $posts = Post::where(['user_id' => $id]);
-        $posts = $user->posts()->paginate(6);
+
+        if(is_admin()) {
+            $posts = Post::with('comments.author')
+            ->with('comments.likes')
+            ->with('likes')
+            ->where('user_id', $id)
+            ->withTrashed()
+            ->paginate(10);
+        } else {
+            $posts = Post::with('comments.author')
+            ->with('comments.likes')
+            ->with('likes')
+            ->where('user_id', $id)
+            ->paginate(10);
+        }        
 
         return view('users.show', array(
             'user' => $user,
@@ -68,6 +81,13 @@ public function __construct() {
             'email' => 'Wprowadź poprawny adres email',
             'min' => 'Pole musi mieć podane minimum :min znaków'
         ]);
+
+            if(is_admin()) {
+
+            } else {
+
+            }
+
 
         
         

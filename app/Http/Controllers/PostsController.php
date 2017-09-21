@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Post;
+use App\Comment;
 
 class PostsController extends Controller
 {
@@ -25,7 +26,7 @@ class PostsController extends Controller
             'post_content' => 'required|min:5'
         ], [
             'required' => 'Nie można dodać pustej treści.',
-            'min' => 'Treść wiadomości powinna być dłuższa niż 5 znaków.'
+            'min' => 'Treść wiadomości powinna być dłuższa niż :min znaków.'
         ]);
 
         Post::create([
@@ -44,8 +45,12 @@ class PostsController extends Controller
      */
     public function show($id)
     {
-        $post = Post::findOrFail($id);
-
+        if(is_admin()) {
+            $post = Post::findOrFail($id)->withTrashed();
+        } else {
+            $post = Post::findOrFail($id);
+        }
+        
         return view('posts.show', compact('post'));
     }
 
@@ -57,7 +62,11 @@ class PostsController extends Controller
      */
     public function edit($id)
     {
-        $post = Post::findOrFail($id);
+        if(is_admin()) {
+            $post = Post::findOrFail($id)->withTrashed();
+        } else {
+            $post = Post::findOrFail($id);
+        }   
 
         return view('posts.edit', compact('post'));
     }
@@ -95,6 +104,7 @@ class PostsController extends Controller
     public function destroy($id)
     {
         $post = Post::where('id', $id)->delete();
+        $comments = Comment::where('post_id', $id)->delete();
 
         return back();
     }

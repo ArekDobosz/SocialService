@@ -55,3 +55,15 @@ function has_friend_invitation($id) {
 
 }
 
+function has_permission_to_edit($user_id) {
+    return Auth::check() && $user_id === Auth::id();
+}
+
+function is_admin() {
+    return Auth::user()->role == 1;
+}
+
+function timesAgo($date) {
+    
+}
+
